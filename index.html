@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>WH40k - Rate Calculator</title>
+</head>
+<style>
+
+    :root {
+        --main-color: white;
+        --second-color: black;
+        --third-color: rgba(0, 0, 0, .1);
+        --main-shadow: 0px 0px .4rem black;
+        --main-error: #cc0000;
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        font-family: "Franklin Gothic Book", Arial;
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizelegibility;
+        font-size: 3.125vw;
+    }
+
+    @media (min-width: 667px) {
+        html {
+            font-size: 0.69vw;
+        }
+    }
+
+    body {
+        font-size: 1.8rem;
+        line-height: 2.1rem;
+    }
+
+    main, img {
+        display: block;
+    }
+
+    img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    picture img {
+        width: 100%;
+        pointer-events: none;
+        object-fit: cover;
+    }
+
+
+    ul li {
+        margin-left: 1.5rem;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus,
+    select:-webkit-autofill,
+    select:-webkit-autofill:hover,
+    select:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    span {
+        text-decoration: inherit;
+        text-transform: inherit;
+    }
+
+    input {
+        margin: 0;
+        padding: .4rem .8rem;
+        border-radius: 4px;
+        border: .1rem solid var(--second-color);
+        outline: none;
+    }
+
+    button {
+        background: var(--second-color);
+        color: var(--main-color);
+        outline: none;
+        border-color: transparent;
+        cursor: pointer;
+        padding: .8rem;
+        border-radius: 4px;
+    }
+
+    button._pressed {
+        background: var(--main-color);
+        color: var(--second-color);
+    }
+
+    select {
+        outline: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+    }
+
+    label {
+        padding-left: .8rem;
+    }
+
+    ._uppercase {
+        text-transform: uppercase;
+    }
+
+    ._text-a-c {
+        text-align: center;
+    }
+
+    ._mob-grid {
+        display: grid;
+    }
+
+    ._mob-flex {
+        display: flex;
+    }
+
+    ._hidden {
+        display: none !important;
+    }
+
+    ._border-r-20 {
+        border-radius: 20px;
+    }
+
+    ._border-r-12 {
+        border-radius: 12px;
+    }
+
+    ._mob-align-i-c {
+        align-items: center;
+    }
+
+    ._mob-just-i-c {
+        justify-items: center;
+    }
+
+    ._mob-just-c-c {
+        justify-content: center;
+    }
+
+    ._mob-just-c-btw {
+        justify-content: space-between;
+    }
+
+
+    ._mob-gg-4 {
+        grid-gap: .4rem;
+    }
+
+    ._mob-gg-8 {
+        grid-gap: .8rem;
+    }
+
+    ._mob-gg-12 {
+        grid-gap: 1.2rem;
+    }
+
+    ._mob-gg-20 {
+        grid-gap: 2rem;
+    }
+
+    ._mob-m-t-8 {
+        margin-top: .8rem;
+    }
+
+    ._mob-m-t-12 {
+        margin-top: 1.2rem
+    }
+
+    ._mob-m-t-20 {
+        margin-top: 2rem
+    }
+
+    ._mob-m-t-40 {
+        margin-top: 4rem
+    }
+
+    ._container {
+        border: .1rem solid var(--second-color);
+        padding: 2rem 1.6rem;
+        box-shadow: var(--main-shadow);
+    }
+
+    .app {
+        min-height: 100vh;
+        background: var(--main-color);
+        padding: 1.6rem;
+    }
+
+    .app__container {
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .app__form {
+        background: var(--third-color);
+        padding: 1.6rem;
+    }
+
+    .app__form-submit {
+        font-weight: 500;
+        letter-spacing: .06rem;
+    }
+
+    .app__effect-value {
+        padding: .4rem .8rem;
+        background: transparent;
+        font-size: 2rem;
+        border-radius: 100%;
+        border: .1rem solid var(--second-color);
+        text-align: center;
+    }
+
+    .app__tooltip {
+        padding-top: .8rem;
+        border-top: .1rem solid var(--second-color);
+        font-size: 1.2rem;
+    }
+
+    .popup {
+        z-index: 999;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        position: fixed;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(6px);
+        display: none;
+    }
+
+    .popup [data-custom-effects], .popup [data-result] {
+        display: none;
+    }
+
+    .popup._show {
+        display: grid;
+    }
+
+
+    .popup._show._effect [data-custom-effects] {
+        display: grid;
+    }
+
+    .popup._show._result [data-result] {
+        display: grid;
+    }
+
+
+    .popup__container {
+        background: var(--main-color);
+    }
+
+    .main-input {
+        position: relative;
+        margin-bottom: 0;
+        transition: margin-bottom .15s;
+    }
+
+    .main-input._error {
+        margin-bottom: 1rem;
+    }
+
+    .main-input._error .main-input__error {
+        opacity: 1;
+    }
+
+    .main-input._error input {
+        border-color: var(--main-error);
+        color: var(--main-error);
+    }
+
+    .main-input__error {
+        padding: 0 0.8rem;
+        font-size: 1.2rem;
+        position: absolute;
+        bottom: -2.2rem;
+        color: var(--main-error);
+        transition: opacity .15s;
+        opacity: 0;
+    }
+
+    .main-input__input input {
+        height: 4rem;
+        transition: color .15s, border-color .15s;
+    }
+
+
+</style>
+<body>
+
+<div data-popup class="app__popup popup _mob-align-i-c _mob-just-i-c">
+    <div class="popup__container _container _border-r-20">
+        <div data-custom-effects class="popup__line _mob-grid _mob-gg-8">
+            <form class="js-effect-form popup__input main-input _mob-flex _mob-gg-8">
+                <input placeholder="Введите число*" name="effect" data-required class="js-calc js-input" type="text">
+                <button class="js-submit">OK</button>
+                <div class="main-input__error">Неверное значение</div>
+            </form>
+
+            <ul class="app__tooltip _mob-m-t-8">* пример заполнения:
+                <li>10 (положительное значение)</li>
+                <li>-10 (отрицаельное значение)</li>
+            </ul>
+        </div>
+
+        <div data-result class="popup__result _mob-grid _mob-gg-12 _text-a-c">
+            <h3>Степень</h3>
+            <h2 class="js-rate-type _uppercase"></h2>
+            <h1 class="js-rate-value _mob-m-t-8"></h1>
+            <button class="js-reset _mob-m-t-12">OK</button>
+        </div>
+    </div>
+</div>
+
+<div class="app _mob-grid _mob-align-i-c _mob-just-i-c">
+    <div class="app__container _mob-grid _mob-gg-20 _border-r-20 _container">
+        <h2 class="_text-a-c _uppercase">Rate Calculator</h2>
+
+        <form class="js-calc-form app__form _border-r-12 _mob-grid _mob-gg-12">
+
+            <div class="app__field main-input _mob-grid _mob-gg-8">
+                <label for="skill">Значение умения*:</label>
+                <input id="skill" data-required name="skill" type="number" class="js-calc js-input">
+                <div class="main-input__error">Обязательное значение</div>
+            </div>
+
+
+            <div class="app__field main-input _mob-grid _mob-gg-8">
+                <label for="roll">Значение броска*:</label>
+                <input id="roll" data-required name="roll" type="number" class="js-calc js-input">
+                <div class="main-input__error">Обязательное значение</div>
+            </div>
+
+            <div class="app__line _mob-flex _mob-just-c-btw">
+                <div class="app__field _mob-grid _mob-gg-8 _mob-flex-1">
+                    <label for="effects">Эффеткы:</label>
+                    <select class="js-select" name="effects" id="effects">
+                        <option value="+0">+0</option>
+                        <option value="-15">-15</option>
+                        <option value="+15">+15</option>
+                        <option data-open-popup="effect" value="others">Другие</option>
+                    </select>
+                </div>
+
+                <div class="app__field _mob-grid _mob-gg-8 _mob-just-i-c">
+                    <h4>Значение:</h4>
+                    <p name="effect" class="js-calc js-effect-value app__effect-value">+0</p>
+                </div>
+            </div>
+
+            <button class="js-submit app__form-submit _uppercase _mob-m-t-8">
+                Результат
+            </button>
+
+            <p class="app__tooltip">* - обязательное значение</p>
+        </form>
+    </div>
+
+
+</div>
+</div>
+</div>
+
+<script>
+
+    class formMechanics {
+
+        constructor(form, popup) {
+
+            this.form = typeof form === "string" ? document.querySelector(form) : form;
+            this.popup = typeof popup === "string" ? document.querySelector(popup) : popup;
+
+            this.getInputsValue = (inputs) => {
+                const result = {}
+                inputs.forEach(input => {
+                    const name = input.getAttribute("name");
+                    result[name] = input.value ? input.value : input.innerText;
+                });
+                return result;
+            }
+
+
+            this.setUpErrorField = (form, field, text = null) => {
+                if (text) {
+                    form.querySelector(`[name='${field}']`).nextElementSibling.innerText = text;
+
+                }
+                form.querySelector(`[name='${field}']`).parentElement.classList.add("_error");
+            }
+
+            this.validateData = (data, fields, form) => {
+                let isValidData = true;
+                fields.forEach(field => {
+                    if (field === "effect") {
+                        const value = +data[field].replace(/\s/g, '');
+                        if (typeof value !== "number" || Number.isNaN(value)) {
+                            this.setUpErrorField(form, field)
+                            isValidData = false;
+                        }
+                    }
+                    if (data[field] === "") {
+                        this.setUpErrorField(form, field)
+                        isValidData = false;
+                    }
+                })
+
+                return isValidData;
+            }
+
+            this.getRequiredFields = (form) => {
+                return [...form.querySelectorAll("[data-required]")].map(field => field.name);
+            }
+
+            this.resetInputs = (inputs) => {
+                inputs.forEach(input => {
+                    input.value = ""
+                    input.parentElement.classList.remove("_error")
+                });
+            }
+
+            this.resetError = (input) => {
+                input.onfocus = () => input.parentElement.classList.remove("_error")
+            }
+
+            this.submitForm = (e, form, calcInputs) => {
+                if (e.target.classList.contains("js-submit") && !e.target.classList.contains("_pressed")) {
+                    e.target.classList.add("_pressed");
+                    setTimeout(() => e.target.classList.remove("_pressed"), 20)
+                    const data = this.getInputsValue(calcInputs);
+                    const requiredField = this.getRequiredFields(form);
+                    const isValid = this.validateData(data, requiredField, form)
+                    return (isValid) ? data : false;
+                }
+            }
+        }
+    }
+
+    class formCalc extends formMechanics {
+        constructor(form, popup) {
+            super(form, popup);
+            this.init = (form) => {
+                const errorsInputs = form.querySelectorAll(".js-input"),
+                    calcInputs = form.querySelectorAll(".js-calc"),
+                    rateType = this.popup.querySelector(".js-rate-type"),
+                    rateValue = this.popup.querySelector(".js-rate-value"),
+                    select = form.querySelector(".js-select"),
+                    reset = this.popup.querySelector(".js-reset");
+                errorsInputs.forEach(input => this.resetError(input));
+                form.onsubmit = (e) => e.preventDefault();
+                let isOthersSelected = false;
+                select.onclick = (e) => {
+                    const selected = select[select.selectedIndex].value;
+                    if (isOthersSelected) {
+                        isOthersSelected = false;
+                        return;
+                    }
+                    if (selected === "others") {
+                        isOthersSelected = true;
+                        this.popup.classList.add("_show", "_effect");
+                    } else {
+                        form.querySelector(".js-calc[name='effect']").innerText = selected;
+                    }
+                }
+
+                form.onclick = async (e) => {
+                    const data = await this.submitForm(e, form, calcInputs);
+                    if (data) {
+                        const {roll, skill, effect} = data;
+                        const skillAfterEffect = +skill + (+effect);
+                        let result = ((skillAfterEffect - roll) / 10);
+                        rateType.innerText = result < 0 ? "ПРОВАЛА" : "УСПЕХА";
+                        const absResult = Math.abs(result);
+                        rateValue.innerHTML = absResult < 1 ? 1 : Math.floor(absResult);
+                        this.popup.classList.add("_show", "_result");
+                    }
+                }
+
+                reset.onclick = (e) => {
+                    this.resetInputs(calcInputs);
+                    this.popup.classList.remove("_show", "_result");
+                    select.selectedIndex = 0;
+                }
+            }
+            this.init(this.form)
+        }
+    }
+
+
+    class formEffect extends formMechanics {
+        constructor(form, popup) {
+            super(form, popup);
+            this.init = (form) => {
+                const errorsInputs = form.querySelectorAll(".js-input"),
+                    calcInputs = form.querySelectorAll(".js-calc");
+                errorsInputs.forEach(input => this.resetError(input));
+                form.onsubmit = (e) => e.preventDefault();
+
+                form.addEventListener("click", (e) => {
+                    const data = this.submitForm(e, form, calcInputs);
+                    if (data) {
+                        document.querySelector(".js-effect-value").innerText = data.effect >= 0 ? `+${data.effect}` : data.effect;
+                        this.popup.classList.remove("_show", "_effect");
+                        this.resetInputs(calcInputs);
+                    }
+                })
+            }
+            this.init(this.form)
+        }
+    }
+
+    new formCalc(".js-calc-form", "[data-popup]");
+    new formEffect(".js-effect-form", "[data-popup]");
+
+</script>
+</body>
+</html>
