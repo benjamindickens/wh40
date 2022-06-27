@@ -42,6 +42,13 @@
     body {
         font-size: 1.8rem;
         line-height: 2.1rem;
+        opacity: 0;
+        color: var(--second-color);
+        transition: opacity .3s;
+    }
+
+    body._loaded {
+        opacity: 1;
     }
 
     main, img {
@@ -125,7 +132,7 @@
     }
 
     .select-selected {
-        background-color: var(--main-color);
+        background-color: var(--third-color);
         color: var(--second-color);
         border-radius: 4px;
         border: .1rem solid var(--second-color) !important;
@@ -150,7 +157,7 @@
     }
 
     /* style the items (options), including the selected item: */
-    .select-items div,.select-selected {
+    .select-items div, .select-selected {
         padding: .4rem 2.2rem .4rem .8rem;
         border: .1rem solid transparent;
         border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
@@ -175,8 +182,8 @@
     }
 
     .select-items div:hover, .same-as-selected {
-        background-color: var(--second-color);
-        color: var(--main-color);
+        background-color: var(--third-color);
+        color: var(--second-color);
     }
 
     label {
@@ -260,6 +267,7 @@
         margin-top: 4rem
     }
 
+
     ._container {
         border: .1rem solid var(--second-color);
         padding: 2rem 1.6rem;
@@ -270,6 +278,44 @@
         min-height: 100vh;
         background: var(--main-color);
         padding: 1.6rem;
+    }
+
+    .app__themes {
+        justify-content: end;
+        align-items: center;
+        position: absolute;
+        top: 0;
+        right: 2.6rem;
+    }
+
+    .app__themes-container {
+        border-radius: 4px;
+        grid-auto-flow: column;
+        justify-content: end;
+        border: .1rem solid var(--second-color);
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+
+    .app__theme-btn {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .app__theme-btn[data-theme="white"] {
+        background: white;
+        border: .1rem solid black;
+    }
+
+    .app__theme-btn[data-theme="black"] {
+        background: black;
+        border: .1rem solid white;
+    }
+
+    .app__theme-btn[data-theme="red"] {
+        background: #cc0000;
+        border: .1rem solid black;
     }
 
     .app__container {
@@ -299,7 +345,7 @@
     .app__tooltip {
         padding-top: .8rem;
         border-top: .1rem solid var(--second-color);
-        font-size: 1.2rem;
+        font-size: 1.4rem;
     }
 
     .popup {
@@ -372,7 +418,61 @@
 
 
 </style>
+<script>
+
+
+    window.onload = () => {
+        document.body.classList.add("_loaded");
+        const current = JSON.parse(window.localStorage.getItem("theme"));
+        const themes = document.querySelector(".js-themes");
+        const root = document.querySelector(':root');
+        const themesList = {
+            white: {
+                '--main-color': "white",
+                '--second-color': "black",
+                '--third-color': "rgba(0, 0, 0, .1)",
+            },
+            black: {
+                '--main-color': "rgba(0, 0, 0, .9)",
+                '--second-color': "white",
+                '--third-color': "rgba(255, 255, 255, .1)",
+            },
+            red: {
+                '--main-color': "rgba(0, 0, 0, .9)",
+                '--second-color': '#800000',
+                '--third-color': "#fdf6de",
+            }
+        }
+
+        const setThemeProperty = (key, value) => {
+            root.style.setProperty(key, value);
+        }
+
+        const setTheme = (name) => {
+            for (const key in themesList[name]) {
+                setThemeProperty(key, themesList[name][key])
+            }
+        }
+
+        themes.onclick = (e) => {
+            const nextTheme = e.target?.dataset.theme;
+            if (nextTheme) {
+                setTheme(nextTheme)
+                window.localStorage.setItem("theme", JSON.stringify(nextTheme));
+            }
+        }
+
+        if (!current) {
+            setTheme("white");
+        } else {
+            setTheme(current);
+        }
+
+    }
+
+</script>
 <body>
+
 
 <div data-popup class="app__popup popup _mob-align-i-c _mob-just-i-c">
     <div class="popup__container _container _border-r-20">
@@ -399,6 +499,15 @@
 </div>
 
 <div class="app _mob-grid _mob-align-i-c _mob-just-i-c">
+    <div class="js-themes app__themes _mob-flex">
+        <h4>Темы:</h4>
+        <div class="app__themes-container _mob-grid _mob-gg-12">
+            <button class="app__theme-btn" data-theme="white"></button>
+            <button class="app__theme-btn" data-theme="black"></button>
+            <button class="app__theme-btn" data-theme="red"></button>
+        </div>
+    </div>
+
     <div class="app__container _mob-grid _mob-gg-20 _border-r-20 _container">
         <h2 class="_text-a-c _uppercase">Rate Calculator</h2>
 
@@ -419,7 +528,7 @@
 
             <div class="app__line _mob-flex _mob-just-c-btw">
                 <div class="app__field _mob-grid _mob-gg-8 _mob-flex-1">
-                    <label for="effects">Эффеткы:</label>
+                    <label for="effects">Эффекты:</label>
                     <div class="custom-select js-select">
                         <select name="effects" id="effects">
                             <option value="+0">+0</option>
@@ -450,86 +559,100 @@
 </div>
 
 <script>
-    var x, i, j, l, ll, selElmnt, a, b, c;
-    /* Look for any elements with the class "custom-select": */
-    x = document.getElementsByClassName("custom-select");
-    l = x.length;
-    for (i = 0; i < l; i++) {
-        selElmnt = x[i].getElementsByTagName("select")[0];
-        ll = selElmnt.length;
-        /* For each element, create a new DIV that will act as the selected item: */
-        a = document.createElement("DIV");
-        a.setAttribute("class", "select-selected");
-        a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
-        x[i].appendChild(a);
-        /* For each element, create a new DIV that will contain the option list: */
-        b = document.createElement("DIV");
-        b.setAttribute("class", "select-items select-hide");
-        for (j = 1; j < ll; j++) {
-            /* For each option in the original select element,
-            create a new DIV that will act as an option item: */
-            c = document.createElement("DIV");
-            c.innerHTML = selElmnt.options[j].innerHTML;
-            c.addEventListener("click", function (e) {
-                /* When an item is clicked, update the original select box,
-                and the selected item: */
-                var y, i, k, s, h, sl, yl;
-                s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-                sl = s.length;
-                h = this.parentNode.previousSibling;
-                for (i = 0; i < sl; i++) {
-                    if (s.options[i].innerHTML == this.innerHTML) {
-                        s.selectedIndex = i;
-                        h.innerHTML = this.innerHTML;
-                        y = this.parentNode.getElementsByClassName("same-as-selected");
-                        yl = y.length;
-                        for (k = 0; k < yl; k++) {
-                            y[k].removeAttribute("class");
+
+    const initSelect = (form) => {
+        var x, i, j, l, ll, selElmnt, a, b, c;
+        /* Look for any elements with the class "custom-select": */
+        x = document.getElementsByClassName("custom-select");
+        l = x.length;
+        for (i = 0; i < l; i++) {
+            selElmnt = x[i].getElementsByTagName("select")[0];
+            ll = selElmnt.length;
+            /* For each element, create a new DIV that will act as the selected item: */
+            a = document.createElement("DIV");
+            a.setAttribute("class", "select-selected");
+            a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+            x[i].appendChild(a);
+            /* For each element, create a new DIV that will contain the option list: */
+            b = document.createElement("DIV");
+            b.setAttribute("class", "select-items select-hide");
+            for (j = 0; j < ll; j++) {
+                /* For each option in the original select element,
+                create a new DIV that will act as an option item: */
+                c = document.createElement("DIV");
+                c.innerHTML = selElmnt.options[j].innerHTML;
+                c.setAttribute('value', selElmnt.options[j].value);
+                c.addEventListener("click", function (e) {
+                    /* When an item is clicked, update the original select box,
+                    and the selected item: */
+                    var y, i, k, s, h, sl, yl;
+                    s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+                    sl = s.length;
+                    h = this.parentNode.previousSibling;
+                    for (i = 0; i < sl; i++) {
+                        if (s.options[i].innerHTML == this.innerHTML) {
+                            s.selectedIndex = i;
+                            h.innerHTML = this.innerHTML;
+                            const selected = this.getAttribute("value");
+
+                            if (selected === "others") {
+                                form.popup.classList.add("_show", "_effect");
+                            } else {
+                                form.form.querySelector(".js-calc[name='effect']").innerText = selected;
+                            }
+
+
+                            y = this.parentNode.getElementsByClassName("same-as-selected");
+                            yl = y.length;
+                            for (k = 0; k < yl; k++) {
+                                y[k].removeAttribute("class");
+                            }
+                            this.setAttribute("class", "same-as-selected");
+                            break;
                         }
-                        this.setAttribute("class", "same-as-selected");
-                        break;
                     }
-                }
-                h.click();
+                    h.click();
+                });
+                b.appendChild(c);
+            }
+            x[i].appendChild(b);
+            a.addEventListener("click", function (e) {
+                /* When the select box is clicked, close any other select boxes,
+                and open/close the current select box: */
+                e.stopPropagation();
+                closeAllSelect(this);
+                this.nextSibling.classList.toggle("select-hide");
+                this.classList.toggle("select-arrow-active");
             });
-            b.appendChild(c);
         }
-        x[i].appendChild(b);
-        a.addEventListener("click", function (e) {
-            /* When the select box is clicked, close any other select boxes,
-            and open/close the current select box: */
-            e.stopPropagation();
-            closeAllSelect(this);
-            this.nextSibling.classList.toggle("select-hide");
-            this.classList.toggle("select-arrow-active");
-        });
-    }
 
-    function closeAllSelect(elmnt) {
-        /* A function that will close all select boxes in the document,
-        except the current select box: */
-        var x, y, i, xl, yl, arrNo = [];
-        x = document.getElementsByClassName("select-items");
-        y = document.getElementsByClassName("select-selected");
-        xl = x.length;
-        yl = y.length;
-        for (i = 0; i < yl; i++) {
-            if (elmnt == y[i]) {
-                arrNo.push(i)
-            } else {
-                y[i].classList.remove("select-arrow-active");
+        function closeAllSelect(elmnt) {
+            /* A function that will close all select boxes in the document,
+            except the current select box: */
+            var x, y, i, xl, yl, arrNo = [];
+            x = document.getElementsByClassName("select-items");
+            y = document.getElementsByClassName("select-selected");
+            xl = x.length;
+            yl = y.length;
+            for (i = 0; i < yl; i++) {
+                if (elmnt == y[i]) {
+                    arrNo.push(i)
+                } else {
+                    y[i].classList.remove("select-arrow-active");
+                }
+            }
+            for (i = 0; i < xl; i++) {
+                if (arrNo.indexOf(i)) {
+                    x[i].classList.add("select-hide");
+                }
             }
         }
-        for (i = 0; i < xl; i++) {
-            if (arrNo.indexOf(i)) {
-                x[i].classList.add("select-hide");
-            }
-        }
+
+        /* If the user clicks anywhere outside the select box,
+        then close all select boxes: */
+        document.addEventListener("click", closeAllSelect);
     }
 
-    /* If the user clicks anywhere outside the select box,
-    then close all select boxes: */
-    document.addEventListener("click", closeAllSelect);
 
     class formMechanics {
 
@@ -615,20 +738,6 @@
                     reset = this.popup.querySelector(".js-reset");
                 errorsInputs.forEach(input => this.resetError(input));
                 form.onsubmit = (e) => e.preventDefault();
-                let isOthersSelected = false;
-                select.onclick = (e) => {
-                    const selected = select[select.selectedIndex].value;
-                    if (isOthersSelected) {
-                        isOthersSelected = false;
-                        return;
-                    }
-                    if (selected === "others") {
-                        isOthersSelected = true;
-                        this.popup.classList.add("_show", "_effect");
-                    } else {
-                        form.querySelector(".js-calc[name='effect']").innerText = selected;
-                    }
-                }
 
                 form.onclick = async (e) => {
                     const data = await this.submitForm(e, form, calcInputs);
@@ -676,8 +785,9 @@
         }
     }
 
-    new formCalc(".js-calc-form", "[data-popup]");
+    const mainForm = new formCalc(".js-calc-form", "[data-popup]");
     new formEffect(".js-effect-form", "[data-popup]");
+    initSelect(mainForm)
 
 </script>
 </body>
